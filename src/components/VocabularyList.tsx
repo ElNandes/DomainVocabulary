@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { VocabularyTerm, Language, Level, Domain } from '../types';
 import VocabularyCard from './VocabularyCard';
 
@@ -17,11 +17,10 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
   domain,
   onUpdateTerm
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<'all' | 'learned' | 'unlearned' | 'review'>('all');
-  
-  const ITEMS_PER_PAGE = 5;
-  
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   // Filter terms based on current filter
   const filteredTerms = terms.filter(term => {
     switch (filter) {
@@ -35,20 +34,38 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
         return true;
     }
   });
-  
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredTerms.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const visibleTerms = filteredTerms.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  
+
   // Stats calculation
   const learnedCount = terms.filter(term => term.learned).length;
   const progressPercentage = terms.length > 0 ? Math.round((learnedCount / terms.length) * 100) : 0;
+
+  // Setup Intersection Observer to track current card
+  useEffect(() => {
+    const options = {
+      root: scrollContainerRef.current,
+      threshold: 0.7,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = parseInt(entry.target.getAttribute('data-index') || '1');
+          setCurrentIndex(index);
+        }
+      });
+    }, options);
+
+    // Observe all card elements
+    const cards = document.querySelectorAll('.vocabulary-card');
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [filteredTerms.length]);
   
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header with metadata */}
-      <div className="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <div className="flex-shrink-0 p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
         <h2 className="text-2xl font-bold mb-2">
           {domain} Vocabulary
         </h2>
@@ -60,7 +77,7 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
             {level} Level
           </span>
           <span className="px-3 py-1 rounded-full bg-white/20 text-white text-sm">
-            {terms.length} Terms
+            {filteredTerms.length} Terms
           </span>
         </div>
         
@@ -77,7 +94,7 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
       </div>
       
       {/* Filter controls */}
-      <div className="border-b border-gray-200 p-4 flex flex-wrap gap-2">
+      <div className="flex-shrink-0 border-b border-gray-200 p-4 flex flex-wrap gap-2 bg-white">
         <button
           onClick={() => setFilter('all')}
           className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -122,45 +139,46 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
       
       {/* Term list */}
       {filteredTerms.length === 0 ? (
-        <div className="p-8 text-center text-gray-500">
+        <div className="flex-1 p-8 flex items-center justify-center text-gray-500">
           No terms match the current filter.
         </div>
       ) : (
-        <div className="min-h-0 overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-4">
-            {visibleTerms.map(term => (
-              <VocabularyCard 
+        <div className="flex-1 relative bg-gray-100">
+          <div ref={scrollContainerRef} className="absolute inset-0 flex flex-col overflow-y-auto snap-y snap-mandatory hide-scrollbar">
+            {filteredTerms.map((term, index) => (
+              <div 
                 key={term.id} 
-                term={term} 
-                onUpdate={(updates) => onUpdateTerm(term.id, updates)} 
+                className="flex-none h-full w-full snap-start vocabulary-card"
+                data-index={index + 1}
+              >
+                <VocabularyCard 
+                  term={term} 
+                  onUpdate={(updates) => onUpdateTerm(term.id, updates)}
+                  currentIndex={index + 1}
+                  totalCards={filteredTerms.length}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {/* Navigation Indicators */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+            {filteredTerms.map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  index + 1 === currentIndex
+                    ? 'bg-blue-600 scale-125'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                onClick={() => {
+                  const cards = document.querySelectorAll('.vocabulary-card');
+                  cards[index]?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                style={{ cursor: 'pointer' }}
               />
             ))}
           </div>
-        </div>
-      )}
-      
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="p-4 border-t border-gray-200 flex justify-between items-center">
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage <= 1}
-            className="px-3 py-1 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
-          >
-            Previous
-          </button>
-          
-          <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages}
-          </span>
-          
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage >= totalPages}
-            className="px-3 py-1 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
-          >
-            Next
-          </button>
         </div>
       )}
     </div>
