@@ -126,14 +126,16 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
           No terms match the current filter.
         </div>
       ) : (
-        <div className="divide-y divide-gray-200">
-          {visibleTerms.map(term => (
-            <VocabularyCard 
-              key={term.id} 
-              term={term} 
-              onUpdate={(updates) => onUpdateTerm(term.id, updates)} 
-            />
-          ))}
+        <div className="min-h-0 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-4">
+            {visibleTerms.map(term => (
+              <VocabularyCard 
+                key={term.id} 
+                term={term} 
+                onUpdate={(updates) => onUpdateTerm(term.id, updates)} 
+              />
+            ))}
+          </div>
         </div>
       )}
       
