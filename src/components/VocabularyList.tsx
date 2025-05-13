@@ -20,7 +20,7 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
   const [filter, setFilter] = useState<'all' | 'learned' | 'unlearned' | 'review'>('all');
   const [currentIndex, setCurrentIndex] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
+  
   // Filter terms based on current filter
   const filteredTerms = terms.filter(term => {
     switch (filter) {
@@ -34,7 +34,7 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
         return true;
     }
   });
-
+  
   // Stats calculation
   const learnedCount = terms.filter(term => term.learned).length;
   const progressPercentage = terms.length > 0 ? Math.round((learnedCount / terms.length) * 100) : 0;
@@ -151,15 +151,15 @@ const VocabularyList: React.FC<VocabularyListProps> = ({
                 className="flex-none h-full w-full snap-start vocabulary-card"
                 data-index={index + 1}
               >
-                <VocabularyCard 
-                  term={term} 
-                  onUpdate={(updates) => onUpdateTerm(term.id, updates)}
+            <VocabularyCard 
+              term={term} 
+              onUpdate={(updates) => onUpdateTerm(term.id, updates)} 
                   currentIndex={index + 1}
                   totalCards={filteredTerms.length}
-                />
+            />
               </div>
-            ))}
-          </div>
+          ))}
+        </div>
           
           {/* Navigation Indicators */}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1">

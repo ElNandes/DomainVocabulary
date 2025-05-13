@@ -1,25 +1,60 @@
 version: '3.8'
 
 services:
-  vocabulary-app:
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vocabulary-app
+    container_name: vocabulary-app-frontend
     ports:
-      - "8080:80"
+      - "8081:80"
     environment:
       - NODE_ENV=production
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - backend
     networks:
       - vocabulary-network
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vocabulary-app-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/vocabulary
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - vocabulary-network
+
+  postgres:
+    image: postgres:15
+    container_name: vocabulary-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vocabulary
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vocabulary-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 networks:
   vocabulary-network:
-    driver: bridge 
+    driver: bridge
+
+volumes:
+  postgres_data: 
