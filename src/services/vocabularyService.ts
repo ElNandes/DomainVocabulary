@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { VocabularyList, VocabularyTerm } from '../lib/supabase';
 import type { GenerateParams } from '../types';
+import { llamaService } from './llamaService';
 
 export const vocabularyService = {
   // Create a new vocabulary list
@@ -21,14 +22,23 @@ export const vocabularyService = {
 
   // Add terms to a vocabulary list
   async addTerms(listId: string, terms: Omit<VocabularyTerm, 'id' | 'list_id' | 'created_at'>[]): Promise<VocabularyTerm[]> {
-    const termsWithListId = terms.map(term => ({
+    // Generate stories for all terms
+    const stories = await llamaService.generateStoriesForTerms(
+      terms.map(term => ({ term: term.term, definition: term.definition })),
+      terms[0].language,
+      terms[0].domain
+    );
+
+    // Add stories to terms
+    const termsWithStories = terms.map(term => ({
       ...term,
       list_id: listId,
+      story: stories.get(term.term) || '',
     }));
 
     const { data, error } = await supabase
       .from('vocabulary_terms')
-      .insert(termsWithListId)
+      .insert(termsWithStories)
       .select();
 
     if (error) throw error;

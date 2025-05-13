@@ -12,6 +12,16 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Set build-time arguments
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_LLAMA_API_URL
+
+# Set environment variables
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+ENV VITE_LLAMA_API_URL=$VITE_LLAMA_API_URL
+
 # Build the application
 RUN npm run build
 

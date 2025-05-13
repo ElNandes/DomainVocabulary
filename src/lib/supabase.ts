@@ -40,4 +40,6 @@ export type VocabularyTerm = {
   learned: boolean;
   review_later: boolean;
   created_at: string;
+  language: string;
+  domain: string;
 }; 

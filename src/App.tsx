@@ -12,11 +12,11 @@ function App() {
   const [vocabularyList, setVocabularyList] = useState<VocabularyListType | null>(null);
   
   // Temporary debug logging
-  useEffect(() => {
-    console.log('Environment variables:');
-    console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.log('VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Present' : 'Missing');
-  }, []);
+  //useEffect(() => {
+    // console.log('Environment variables:');
+    // console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    // console.log('VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Present' : 'Missing');
+  //}, []);
 
   // Handle generating a new vocabulary list
   const handleGenerateList = async (params: GenerateParams) => {
