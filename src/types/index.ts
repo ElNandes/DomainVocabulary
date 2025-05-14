@@ -46,4 +46,5 @@ export interface GenerateParams {
   level: Level;
   domain: Domain;
   count: number;
+  sourceUrl?: string; // Optional URL for user-defined source
 }

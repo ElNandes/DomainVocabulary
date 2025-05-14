@@ -44,6 +44,7 @@ const VocabularyForm: React.FC<VocabularyFormProps> = ({ onGenerate, isLoading }
   const [customDomain, setCustomDomain] = useState('');
   const [count, setCount] = useState(20);
   const [showCustomDomain, setShowCustomDomain] = useState(false);
+  const [sourceUrl, setSourceUrl] = useState('');
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,7 +56,8 @@ const VocabularyForm: React.FC<VocabularyFormProps> = ({ onGenerate, isLoading }
       language,
       level,
       domain: finalDomain,
-      count
+      count,
+      sourceUrl: sourceUrl || undefined
     });
   };
 
@@ -143,6 +145,24 @@ const VocabularyForm: React.FC<VocabularyFormProps> = ({ onGenerate, isLoading }
               />
             )}
           </div>
+        </div>
+
+        {/* Source URL */}
+        <div>
+          <label htmlFor="sourceUrl" className="block text-sm font-medium text-gray-700 mb-1">
+            Source URL (Optional)
+          </label>
+          <input
+            id="sourceUrl"
+            type="url"
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            placeholder="https://example.com"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            Enter a website URL to extract vocabulary from (optional)
+          </p>
         </div>
 
         {/* Word Count */}

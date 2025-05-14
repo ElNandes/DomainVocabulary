@@ -11,6 +11,7 @@ export const vocabularyService = {
         language: params.language,
         level: params.level,
         domain: params.domain,
+        source_url: params.sourceUrl || null,
       })
       .select()
       .single();
