@@ -29,7 +29,7 @@ function App() {
       console.log('Created vocabulary list:', list);
       
       // Fetch terms for the selected language and domain
-      const terms = await vocabularyService.getTermsByLanguageAndDomain(params.language, params.domain);
+      const terms = await vocabularyService.getTermsByLanguageAndDomain(params.language, params.domain, params.level);
       console.log('Fetched terms:', terms);
       
       if (!terms || terms.length === 0) {
@@ -48,7 +48,7 @@ function App() {
           id: term.id,
           term: term.term,
           definition: term.definition,
-          story: term.story || '',
+          story: term.story || 'No story available',
           learned: term.learned,
           reviewLater: term.review_later
         }))

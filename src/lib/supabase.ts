@@ -41,5 +41,4 @@ export type VocabularyTerm = {
   review_later: boolean;
   created_at: string;
   language: string;
-  domain: string;
 }; 
